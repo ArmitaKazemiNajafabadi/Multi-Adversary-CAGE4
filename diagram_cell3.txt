@@ -1,0 +1,108 @@
+CELL 3
+import numpy as np
+import matplotlib.pyplot as plt
+import re
+
+# Red-agent → ID mapping
+red_agent_names = [
+    "CybORG.Agents.SimpleAgents.ConstantAgent.SleepAgent",
+    "FSRedAgentCombined.FSRedAgentCombined",
+    "FSRedAgentDegrader.FSRedAgentDegrader",
+    "FSRedAgentFailureTracker.FSRedAgentFailureTracker",
+    "FSRedAgentImpacter.FSRedAgentImpacter",
+    "FSRedAgentTargetA.FSRedAgentTargetA",
+    "FSRedAgentTargetAOperational.FSRedAgentTargetAOperational",
+    "FSRedAgentTargetARestricted.FSRedAgentTargetARestricted",
+    "FSRedAgentTargetB.FSRedAgentTargetB",
+    "FSRedAgentTargetBOperational.FSRedAgentTargetBOperational",
+    "FSRedAgentTargetBRestricted.FSRedAgentTargetBRestricted",
+    "CybORG.Agents.SimpleAgents.FiniteStateRedAgent.FiniteStateRedAgent",
+]
+
+attacker_name_to_id = {name: i for i, name in enumerate(red_agent_names)}
+
+# The 2 attackers in switching sequence (every 5 steps)
+switching_sequence = [
+    ("FSRedAgentCombined.FSRedAgentCombined", "Random FS"),
+    ("CybORG.Agents.SimpleAgents.ConstantAgent.SleepAgent", "Sleep"),
+]
+
+# Get IDs for these agents
+agent_ids = [attacker_name_to_id[name] for name, _ in switching_sequence]
+agent_labels = [label for _, label in switching_sequence]
+
+# Load beliefs from file
+def load_beliefs_from_file(filepath):
+    """Parse belief_log.txt and extract belief arrays."""
+    beliefs_list = []
+    pattern = re.compile(r"Episode \d+ beliefs: \[(.*?)\]")
+    
+    with open(filepath, "r") as f:
+        for line in f:
+            m = pattern.search(line)
+            if m:
+                # Parse the belief string
+                belief_str = m.group(1)
+                # Split by '], [' to separate timesteps
+                timesteps = belief_str.split('], [')
+                episode_beliefs = []
+                
+                for ts_str in timesteps:
+                    # Clean up brackets
+                    ts_str = ts_str.strip('[]')
+                    # Parse array values
+                    values = np.array([float(x) for x in ts_str.split(', ')])
+                    episode_beliefs.append(values)
+                
+                beliefs_list.append(np.array(episode_beliefs))
+    
+    if len(beliefs_list) == 0:
+        print("WARNING: No beliefs loaded from file")
+        return np.empty((0, 0, 0))
+    
+    return np.array(beliefs_list)  # shape: [episodes, T, A]
+
+
+# Load beliefs
+beliefs = load_beliefs_from_file("belief_log.txt")
+print(f"Loaded beliefs shape: {beliefs.shape}")
+
+if beliefs.shape[0] > 0:
+    mean_belief = beliefs.mean(axis=0)  # [T, A] - average across episodes
+    
+    # Plot
+    plt.figure(figsize=(12, 6))
+    
+    for agent_id, label in zip(agent_ids, agent_labels):
+        plt.plot(
+            mean_belief[:, agent_id],
+            linewidth=2.5,
+            label=f"{label}"
+        )
+    
+    # Add vertical lines at switching points (every 5 steps)
+    switch_points = list(range(5, 500, 5))
+    for sp in switch_points:
+        plt.axvline(x=sp, color='gray', linestyle=':', alpha=0.3, linewidth=1)
+    
+    # Shade background by period (alternating 5-step blocks)
+    colors = ['#ffebee', '#e3f2fd']
+    for i in range(0, 100, 2):  # 100 5-step periods
+        start = i * 5
+        end = start + 5
+        if end <= 500:
+            plt.axvspan(start, end, alpha=0.1, color=colors[i % 2])
+    
+    plt.xlabel("Time Step")
+    plt.ylabel("Belief Probability")
+    plt.title("Defense Belief Tracking: Alternating Sleep/Random FS (5-step switching)")
+    plt.legend(loc='best', fontsize=11)
+    plt.grid(True, alpha=0.3)
+    plt.xlim([0, 500])
+    plt.ylim([0, 1])
+    plt.tight_layout()
+    plt.show()
+else:
+    print("No beliefs to plot")
+
+---

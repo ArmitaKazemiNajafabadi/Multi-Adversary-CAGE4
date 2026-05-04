@@ -17,20 +17,11 @@ from FSRedAgentTargetARestricted import FSRedAgentTargetARestricted
 from FSRedAgentTargetB import FSRedAgentTargetB
 from FSRedAgentTargetBOperational import FSRedAgentTargetBOperational
 from FSRedAgentTargetBRestricted import FSRedAgentTargetBRestricted
-# Switching Agents
 from SleepSwitchFSRandom import SleepSwitchFSRandom
 from ImpacterSwitchFSRandom import ImpacterSwitchFSRandom
 from FSMultipleSwitchAgent1 import FSMultipleSwitchAgent1
 from FSMultipleSwitchAgent2 import FSMultipleSwitchAgent2
-from CybORG.Simulator.Scenarios import EnterpriseScenarioGenerator
-from wrapper.observation_graph import ObservationGraph
-from ray.rllib.env.multi_agent_env import MultiAgentEnv
-
-from datetime import datetime
-import json
-import sys
-import os
-import torch
+'''only the parallel evaluation logs the belief'''
 
 
 ''' Check where the saved folder is to avoid overwriting
@@ -40,105 +31,18 @@ import torch
 ############################################# SPECIFY THE SAVE FOLDER CORRECTLY ###############################
 ############################################# SPECIFY THE SAVE FOLDER CORRECTLY ###############################
 ############################################# SPECIFY THE SAVE FOLDER CORRECTLY ###############################
-############################################# مدل لود شده رو چک کن ###############################
+############################################# SPECIFY THE SAVE FOLDER CORRECTLY ###############################
 '''
-from models.cage4 import InductiveGraphPPOAgent
-from models.cage4 import load
-from wrapper.graph_wrapper import GraphWrapper
-
-# from models.cage4_onehot_attention import InductiveGraphPPOAgent
-# from models.cage4_onehot_attention import load
-# # from wrapper.graph_wrapper_onehot_attention import GraphWrapper
-# from wrapper.graph_wrapper_with_classifier_for_evaluation import GraphWrapper
-
-''' SWITCH IMPORTS AS WELL'''
 
 
-class Submission:
+from CybORG.Simulator.Scenarios import EnterpriseScenarioGenerator
 
-    # Submission name
-    NAME: str = "Model Specific"
-    TEAM: str = "Cybermonic-ModelSpec"
-    TECHNIQUE: str = "PPO + Model Specific"
-    '''domain specific''' #shouldn't be Oct10?
-    # AGENTS = {
-    #     f"blue_agent_{i}": load(f'{os.path.dirname(__file__)}/checkpoints_onehot_attention/Oct3_{i}_checkpoint.pt')
-    #     for i in range(5)
-    # }
-    # AGENTS = {
-    #     f"blue_agent_{i}": load(f'{os.path.dirname(__file__)}/checkpoints_onehot_attention/Oct4_{i}_checkpoint.pt')
-    #     for i in range(5)
-    # }
-    # AGENTS = {
-    #     f"blue_agent_{i}": load(f'{os.path.dirname(__file__)}/checkpoints_onehot_attention/Oct9_{i}_checkpoint.pt')
-    #     for i in range(5) #Sleep Agent reward -33!!
-    # }
-    # AGENTS = {
-    #     f"blue_agent_{i}": load(f'{os.path.dirname(__file__)}/checkpoints_onehot_attention/Oct10_{i}_checkpoint.pt')
-    #     for i in range(5) 
-    # }
-    # AGENTS = {
-    #     f"blue_agent_{i}": load(f'{os.path.dirname(__file__)}/checkpoints_onehot_attention/Nov26_{i}_checkpoint.pt') #The model trained on FS, Impacter, degrader, failure tracker, combined Red agents.
-    #     for i in range(5) 
-    # }
-    # AGENTS = {
-    #     f"blue_agent_{i}": load(f'{os.path.dirname(__file__)}/checkpoints_modelspec/fsRedCombined_Nov30_{i}_checkpoint.pt') #The model trained on FS, Impacter, degrader, failure tracker, combined Red agents.
-    #     for i in range(5) 
-    # }
-    # AGENTS = {
-    #     f"blue_agent_{i}": load(f'{os.path.dirname(__file__)}/checkpoints_modelspec/fsRedTargetA_{i}_checkpoint.pt') #The model trained on FS, Impacter, degrader, failure tracker, combined Red agents.
-    #     for i in range(5) 
-    # }
-    AGENTS = {
-        f"blue_agent_{i}": load(f'{os.path.dirname(__file__)}/checkpoints_modelspec/gnn_ppo-{i}.pt') #The model trained on FS, Impacter, degrader, failure tracker, combined Red agents.
-        for i in range(5) 
-    }
-    # AGENTS = {
-    #     f"blue_agent_{i}": load(f'{os.path.dirname(__file__)}/checkpoints_modelspec/fsRedImpacter_Nov30_{i}_checkpoint.pt') 
-    #     for i in range(5) 
-    # }
-    # AGENTS = {
-    #     f"blue_agent_{i}": load(f'{os.path.dirname(__file__)}/checkpoints_modelspec/fsRedCombined_Dec5_{i}_checkpoint.pt') #The model trained on FS, Impacter, degrader, failure tracker, combined Red agents.
-    #     for i in range(5) 
-    # }
-    # AGENTS = {
-    #     f"blue_agent_{i}": load(f'{os.path.dirname(__file__)}/checkpoints_modelspec/fsRedTargetBOperational_Dec6.py_{i}_checkpoint.pt') #The model trained on FS, Impacter, degrader, failure tracker, combined Red agents.
-    #     for i in range(5) 
-    # }
-    # AGENTS = {
-    #     f"blue_agent_{i}": load(f'{os.path.dirname(__file__)}/checkpoints_modelspec/fsRedTargetA_Dec5_{i}_checkpoint.pt') #The model trained on FS, Impacter, degrader, failure tracker, combined Red agents.
-    #     for i in range(5) 
-    # }
-    # AGENTS = {
-    #     f"blue_agent_{i}": load(f'{os.path.dirname(__file__)}/checkpoints_modelspec/fsRedDegrader_Dec6_{i}_checkpoint.pt') #The model trained on FS, Impacter, degrader, failure tracker, combined Red agents.
-    #     for i in range(5) 
-    # }
-    # AGENTS = {
-    #     f"blue_agent_{i}": load(f'{os.path.dirname(__file__)}/defense_baselines/Dave_IPPO/actor_ppo_{i}') #The model trained on FS, Impacter, degrader, failure tracker, combined Red agents.
-    #     for i in range(5) 
-    # }
-    # AGENTS = {
-    #     f"blue_agent_{i}": load(f'{os.path.dirname(__file__)}/checkpoints_modelspec/fsRedDegrader_Dec14_{i}_checkpoint.pt') #The model trained on FS, Impacter, degrader, failure tracker, combined Red agents.
-    #     for i in range(5) 
-    # }
-    # AGENTS = {
-    #     f"blue_agent_{i}": load(f'{os.path.dirname(__file__)}/results_DR_cybermonic/DR_cybermonic_Dec15_{i}_checkpoint.pt') #The model trained on FS, Impacter, degrader, failure tracker, combined Red agents.
-    #     for i in range(5) 
-    # }
-    # AGENTS = {
-    #     f"blue_agent_{i}": load(f'{os.path.dirname(__file__)}/checkpoints_modelspec/fsRedFailureTracker_Dec16_{i}_checkpoint.pt') #The model trained on FS, Impacter, degrader, failure tracker, combined Red agents.
-    #     for i in range(5) 
-    # }
-    # print(f'agent paths: {os.path.dirname(__file__)}/checkpoints_modelspec/gnn_ppo-i.pt')
-    
-    @staticmethod
-    def wrap(env: CybORG, red_agent_class) -> MultiAgentEnv:
-            print(f'red id check: {RED_AGENT_DICT.get(red_agent_class)}')
-            ''' change wrapper''' 
-            # return GraphWrapper(env, attacker_id=RED_AGENT_DICT.get(red_agent_class), total_attaacker_num=12) 
-            return GraphWrapper(env) # to evaluate the cybermonic original defense
+from datetime import datetime
 
+import json
 
+import sys
+import os
 
 cyborg_version = CYBORG_VERSION
 EPISODE_LENGTH = 500
@@ -146,41 +50,24 @@ EPISODE_LENGTH = 500
 
 # List of all red agent classes you want to evaluate
 RED_AGENT_CLASSES = [
+    # FSRedAgentAggressiveTargetA,
     # FSRedAgentCombined,
     # FSRedAgentDegrader,
     # FSRedAgentFailureTracker,
-#     FSRedAgentImpacter,
-#     FSRedAgentTargetA,
-#     FSRedAgentTargetAOperational,
-#     FSRedAgentTargetARestricted,
-#     FSRedAgentTargetB,
-#     FSRedAgentTargetBOperational,
-#     FSRedAgentTargetBRestricted,
-#     FiniteStateRedAgent,
-#     SleepAgent,
-      # SleepSwitchFSRandom,
-      # ImpacterSwitchFSRandom,
-    FSMultipleSwitchAgent1,
-    # FSMultipleSwitchAgent2
+    # FSRedAgentImpacter,
+    # FSRedAgentTargetA,
+    # FiniteStateRedAgent,
+    # SleepAgent,
+    # FSRedAgentTargetAOperational,
+    # FSRedAgentTargetARestricted,
+    # FSRedAgentTargetB,
+    # FSRedAgentTargetBOperational,
+    # FSRedAgentTargetBRestricted,
+    # SleepSwitchFSRandom,
+    # ImpacterSwitchFSRandom,
+    # FSMultipleSwitchAgent1,
+    FSMultipleSwitchAgent2
 ]
-RED_AGENT_DICT = {
-    SleepAgent: 0,
-    FSRedAgentCombined: 1,
-    FSRedAgentDegrader: 2,
-    FSRedAgentFailureTracker: 3,
-    FSRedAgentImpacter: 4,
-    FSRedAgentTargetA: 5,
-    FSRedAgentTargetAOperational: 6,
-    FSRedAgentTargetARestricted: 7,
-    FSRedAgentTargetB: 8,
-    FSRedAgentTargetBOperational: 9,
-    FSRedAgentTargetBRestricted: 10,
-    FiniteStateRedAgent: 11,
-    SleepSwitchFSRandom: 12,
-    ImpacterSwitchFSRandom: 13,
-    FSMultipleSwitchAgent1: 14,
-    FSMultipleSwitchAgent2: 15,
-}
 
 def rmkdir(path: str):
     """Recursive mkdir"""
@@ -198,7 +85,27 @@ def rmkdir(path: str):
 
 
 def load_submission(source: str):
-    return Submission()
+    """Load submission from a directory or zip file"""
+    sys.path.insert(0, source)
+
+    if source.endswith(".zip"):
+        try:
+            # Load submission from zip.
+            from submission.submission import Submission
+        except ImportError as e:
+            raise ImportError(
+                """
+                Error loading submission from zip.
+                Please ensure the zip contains the path submission/submission.py
+                """
+            ).with_traceback(e.__traceback__)
+    else:
+        # Load submission normally
+        from submission import Submission
+
+    # Remove submission from path.
+    sys.path.remove(source)
+    return Submission
 
 
 def evaluate_one_episode(cyborg, wrapped_cyborg, agent, write_to_file, i,tot):
@@ -206,6 +113,7 @@ def evaluate_one_episode(cyborg, wrapped_cyborg, agent, write_to_file, i,tot):
     r = []
     a = []
     o = []
+    belief_log = []
     count = 0
     for j in tqdm(range(EPISODE_LENGTH), desc=f'({i+1}/{tot})'):
         actions = {
@@ -216,6 +124,15 @@ def evaluate_one_episode(cyborg, wrapped_cyborg, agent, write_to_file, i,tot):
             if agent_name in wrapped_cyborg.agents
         }
         observations, rew, term, trunc, info = wrapped_cyborg.step(actions)
+
+        ''' add belief capture'''
+        belief_log.append({
+        "t": j,
+        "id": red_agent_class,
+        "belief": wrapped_cyborg.get_belief()
+        })
+        ''' end belied capture'''
+        
         done = {
             agent: term.get(agent, False) or trunc.get(agent, False)
             for agent in wrapped_cyborg.agents
@@ -238,7 +155,7 @@ def evaluate_one_episode(cyborg, wrapped_cyborg, agent, write_to_file, i,tot):
                 }
             )
     total_reward = sum(r)
-    return total_reward, a, o, r
+    return total_reward, a, o, r, belief_log
 
 def run_evaluation_parallel(submission, red_agent_class, log_path, max_eps=100, write_to_file=False, seed=None, workers=32):
     cyborg_version = CYBORG_VERSION
@@ -270,7 +187,7 @@ def run_evaluation_parallel(submission, red_agent_class, log_path, max_eps=100, 
             steps=EPISODE_LENGTH,
         )
         cyborg = CybORG(sg, "sim", seed=seed)
-        wrapped_cyborg = submission.wrap(cyborg, red_agent_class)
+        wrapped_cyborg = submission.wrap(cyborg)
         envs.append((cyborg, wrapped_cyborg))
     
     print(version_header)
@@ -290,7 +207,7 @@ def run_evaluation_parallel(submission, red_agent_class, log_path, max_eps=100, 
         delayed(evaluate_one_episode)(*envs[i % workers], submission.AGENTS, write_to_file, i, max_eps)
         for i in range(max_eps)
     )
-    total_reward, actions_log, obs_log, step_reward_log = zip(*outs)
+    total_reward, actions_log, obs_log, step_reward_log, belief_log = zip(*outs)
 
     end = datetime.now()
     difference = end - start
@@ -367,6 +284,15 @@ def run_evaluation_parallel(submission, red_agent_class, log_path, max_eps=100, 
             for ep_idx, ep_rewards in enumerate(step_reward_log):
                 data.write(f"Episode {ep_idx} step_rewards: {ep_rewards}\n")
 
+
+        ''' write belief dist. to file'''    
+        with open(log_path + "belief_log.txt", "w") as data:
+            data.write(version_header + "\n")
+            data.write(author_header + "\n")
+            for ep_idx, ep_beliefs in enumerate(belief_log):
+                data.write(f"Episode {ep_idx} beliefs: {ep_beliefs}\n")
+
+
 def run_evaluation(submission, red_agent_class, log_path, max_eps=100, write_to_file=False, seed=None):
     cyborg_version = CYBORG_VERSION
     EPISODE_LENGTH = 500
@@ -394,7 +320,7 @@ def run_evaluation(submission, red_agent_class, log_path, max_eps=100, write_to_
         steps=EPISODE_LENGTH,
     )
     cyborg = CybORG(sg, "sim", seed=seed)
-    wrapped_cyborg = submission.wrap(cyborg, red_agent_class)
+    wrapped_cyborg = submission.wrap(cyborg)
     
     print(version_header)
     print(author_header)
@@ -413,6 +339,7 @@ def run_evaluation(submission, red_agent_class, log_path, max_eps=100, write_to_
     actions_log = []
     obs_log = []
     step_reward_log = []
+    belief_log = []
 
     
     for i in tqdm(range(max_eps)):
@@ -421,6 +348,8 @@ def run_evaluation(submission, red_agent_class, log_path, max_eps=100, write_to_
         a = []
         o = []
         count = 0
+        # inside the episode loop (before the step loop):
+        ep_belief_log = []  #'''added'''
         for j in range(EPISODE_LENGTH):
             actions = {
                 agent_name: agent.get_action(
@@ -430,6 +359,17 @@ def run_evaluation(submission, red_agent_class, log_path, max_eps=100, write_to_
                 if agent_name in wrapped_cyborg.agents
             }
             observations, rew, term, trunc, info = wrapped_cyborg.step(actions)
+
+
+            ''' add belief capture'''
+            ep_belief_log.append({
+                "t": j,
+                "id": red_agent_class,
+                "belief": wrapped_cyborg.get_belief()
+            })
+            ''' end belied capture'''
+
+        
             done = {
                 agent: term.get(agent, False) or trunc.get(agent, False)
                 for agent in wrapped_cyborg.agents
@@ -452,10 +392,13 @@ def run_evaluation(submission, red_agent_class, log_path, max_eps=100, write_to_
                 )
         total_reward.append(sum(r))
 
+
         if write_to_file:
             actions_log.append(a)
             obs_log.append(o)
             step_reward_log.append(r)
+            belief_log.append(ep_belief_log)  # see note below
+
 
     end = datetime.now()
     difference = end - start
@@ -532,6 +475,13 @@ def run_evaluation(submission, red_agent_class, log_path, max_eps=100, write_to_
             for ep_idx, ep_rewards in enumerate(step_reward_log):
                 data.write(f"Episode {ep_idx} step_rewards: {ep_rewards}\n")
 
+        ''' write belief dist. to file'''    
+        with open(log_path + "belief_log.txt", "w") as data:
+            data.write(version_header + "\n")
+            data.write(author_header + "\n")
+            for ep_idx, ep_beliefs in enumerate(belief_log):
+                data.write(f"Episode {ep_idx} beliefs: {ep_beliefs}\n")
+
 
 if __name__ == "__main__":
     import argparse
@@ -562,13 +512,9 @@ if __name__ == "__main__":
 ############################################# SPECIFY THE SAVE FOLDER CORRECTLY ###############################
 ############################################# SPECIFY THE SAVE FOLDER CORRECTLY ###############################
 '''
-    # args.output_path = os.path.abspath('results')
+    args.output_path = os.path.abspath('results')
     # args.output_path = os.path.abspath('logs_onehot_attention')
-    # args.output_path = os.path.abspath('checkpoints_modelspec')
-    args.output_path = os.path.abspath('checkpoints_cybermonic')
-    # args.output_path = os.path.abspath('results_DR_cybermonic')
-    print(f'output path { args.output_path }')
-
+    
     args.submission_path = os.path.abspath('')
 
     if not args.output_path.endswith("/"):
@@ -600,6 +546,3 @@ if __name__ == "__main__":
             run_evaluation_parallel(
                 submission,RAC, max_eps=args.max_eps, log_path=agent_output_path, seed=args.seed, workers=args.distribute, write_to_file= True
             )
-
-
-
